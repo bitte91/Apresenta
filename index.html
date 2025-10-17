@@ -53,6 +53,21 @@
             --gradient-end: #ffe8cc;
         }
 
+        /* Theme 4: Dark Mode */
+        [data-theme="dark"] {
+            --primary-color: #4dabf7;
+            --secondary-color: #0d6efd;
+            --accent-color: #1864ab;
+            --text-color: #f8f9fa;
+            --light-text: #adb5bd;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --white: #ffffff;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --gradient-start: #1e1e1e;
+            --gradient-end: #121212;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -157,6 +172,11 @@
             background: linear-gradient(135deg, #fd7e14, #ff922b);
         }
 
+        .theme-dark {
+            background-color: #121212;
+            border: 2px solid #f8f9fa;
+        }
+
         /* Splash Screen */
         .splash-screen {
             position: fixed;
@@ -219,9 +239,9 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
         }
 
         @keyframes loading {
@@ -548,6 +568,10 @@
             border: none;
             cursor: pointer;
             font-size: 16px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
         }
 
         .btn-primary {
@@ -1341,6 +1365,12 @@
             min-height: 150px;
         }
 
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
         .form-button {
             padding: 12px 30px;
             background-color: var(--primary-color);
@@ -1397,7 +1427,7 @@
 
         .social-link:hover {
             background-color: var(--primary-color);
-            transform: translateY(-3px);
+            transform: translateY(-3px) scale(1.1);
         }
 
         .copyright {
@@ -1461,6 +1491,14 @@
 
         .toast i {
             font-size: 20px;
+        }
+
+        .toast.success {
+            background-color: #2f9e44;
+        }
+
+        .toast.error {
+            background-color: #dc3545;
         }
 
         /* Responsive */
@@ -1604,6 +1642,7 @@
             <div class="theme-option theme-ocean active" data-theme="ocean" title="Tema Oceano Azul"></div>
             <div class="theme-option theme-forest" data-theme="forest" title="Tema Floresta Verde"></div>
             <div class="theme-option theme-sunset" data-theme="sunset" title="Tema Pôr do Sol Laranja"></div>
+            <div class="theme-option theme-dark" data-theme="dark" title="Tema Escuro"></div>
         </div>
     </div>
 
@@ -1725,6 +1764,7 @@
                 <div class="mobile-theme-option theme-ocean active" data-theme="ocean" title="Tema Oceano Azul"></div>
                 <div class="mobile-theme-option theme-forest" data-theme="forest" title="Tema Floresta Verde"></div>
                 <div class="mobile-theme-option theme-sunset" data-theme="sunset" title="Tema Pôr do Sol Laranja"></div>
+            <div class="mobile-theme-option theme-dark" data-theme="dark" title="Tema Escuro"></div>
             </div>
         </div>
     </div>
@@ -2233,18 +2273,22 @@
                             <div class="form-group">
                                 <label for="name">Nome</label>
                                 <input type="text" id="name" class="form-control" required>
+                                <div class="error-message" id="name-error"></div>
                             </div>
                             <div class="form-group">
                                 <label for="email">E-mail</label>
                                 <input type="email" id="email" class="form-control" required>
+                                <div class="error-message" id="email-error"></div>
                             </div>
                             <div class="form-group">
                                 <label for="subject">Assunto</label>
                                 <input type="text" id="subject" class="form-control" required>
+                                <div class="error-message" id="subject-error"></div>
                             </div>
                             <div class="form-group">
                                 <label for="message">Mensagem</label>
                                 <textarea id="message" class="form-control" required></textarea>
+                                <div class="error-message" id="message-error"></div>
                             </div>
                             <button type="submit" class="form-button">
                                 <i class="fas fa-paper-plane"></i>
@@ -2453,7 +2497,13 @@
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
         
-        function showToast(message) {
+        function showToast(message, isSuccess = true) {
+            toast.className = 'toast';
+            if (isSuccess) {
+                toast.classList.add('success');
+            } else {
+                toast.classList.add('error');
+            }
             toastMessage.textContent = message;
             toast.classList.add('show');
             
@@ -2462,21 +2512,45 @@
             }, 3000);
         }
         
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const subjectInput = document.getElementById('subject');
+        const messageInput = document.getElementById('message');
+
+        const nameError = document.getElementById('name-error');
+        const emailError = document.getElementById('email-error');
+        const subjectError = document.getElementById('subject-error');
+        const messageError = document.getElementById('message-error');
+
+        function validateField(input, errorContainer, validationFn) {
+            const isValid = validationFn(input.value);
+            if (!isValid) {
+                errorContainer.textContent = 'Campo inválido.';
+            } else {
+                errorContainer.textContent = '';
+            }
+            return isValid;
+        }
+
+        nameInput.addEventListener('input', () => validateField(nameInput, nameError, value => value.trim() !== ''));
+        emailInput.addEventListener('input', () => validateField(emailInput, emailError, value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)));
+        subjectInput.addEventListener('input', () => validateField(subjectInput, subjectError, value => value.trim() !== ''));
+        messageInput.addEventListener('input', () => validateField(messageInput, messageError, value => value.trim() !== ''));
+
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Get form values
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const subject = document.getElementById('subject').value;
-            const message = document.getElementById('message').value;
+            const isNameValid = validateField(nameInput, nameError, value => value.trim() !== '');
+            const isEmailValid = validateField(emailInput, emailError, value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+            const isSubjectValid = validateField(subjectInput, subjectError, value => value.trim() !== '');
+            const isMessageValid = validateField(messageInput, messageError, value => value.trim() !== '');
             
-            // Here you would normally send the form data to a server
-            // For this example, we'll just show a success message
-            showToast(`Obrigado pela sua mensagem, ${name}! Entrarei em contato em breve.`);
-            
-            // Reset form
-            contactForm.reset();
+            if (isNameValid && isEmailValid && isSubjectValid && isMessageValid) {
+                showToast(`Obrigado pela sua mensagem, ${nameInput.value}! Entrarei em contato em breve.`);
+                contactForm.reset();
+            } else {
+                showToast('Por favor, corrija os erros no formulário.', false);
+            }
         });
 
         // Floating Action Button
