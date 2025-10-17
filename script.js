@@ -88,13 +88,6 @@
         const savedTheme = localStorage.getItem('theme') || 'ocean';
         setTheme(savedTheme);
 
-        // Splash Screen
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('splash-screen').classList.add('hidden');
-            }, 2000);
-        });
-
         // Header Scroll Effect
         window.addEventListener('scroll', function() {
             const header = document.getElementById('header');
@@ -266,8 +259,8 @@
         // Initial setup for animation
         sections.forEach(section => {
             section.style.opacity = '0';
-            section.style.transform = 'translateY(30px)';
-            section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
         });
 
         window.addEventListener('scroll', animateOnScroll);
